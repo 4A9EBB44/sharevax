@@ -3,6 +3,7 @@ package com.sharevax.core.model;
 import lombok.*;
 
 import javax.persistence.*;
+import java.math.BigInteger;
 import java.util.List;
 
 @Builder
@@ -23,19 +24,19 @@ public class Country {
   private String name;
 
   @Column(name = "population", nullable = false)
-  private int population;
+  private BigInteger population;
 
   @Column(name = "vaccination_rate", nullable = false)
   private double vaccinationRate;
 
   @Column(name = "daily_vaccine_consumption", nullable = false)
-  private int dailyVaccineConsumption;
+  private BigInteger dailyVaccineConsumption;
 
   @Column(name = "vaccine_stock", nullable = false)
-  private int vaccineStock;
+  private BigInteger vaccineStock;
 
   @Column(name = "daily_vaccine_production", nullable = false)
-  private int vaccineProduction;
+  private BigInteger dailyVaccineProduction;
 
   @OneToMany(mappedBy = "country", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
   private List<Harbor> harbors;

@@ -30,6 +30,7 @@ public class Harbor {
     private Country country;
 
     @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
     private HarborStatus status;
 
     @OneToMany(mappedBy = "startHarbor", fetch = FetchType.LAZY)
