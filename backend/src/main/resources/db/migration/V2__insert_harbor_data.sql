@@ -1,3 +1,12 @@
+create table harbor
+(
+    id         integer  not null,
+    coordinate geometry not null,
+    name       varchar     not null,
+    status     varchar     not null,
+    country_id integer  not null
+);
+
 INSERT INTO harbor (id, coordinate, name, status, country_id)
 VALUES (1, ST_GeomFromText('POINT(30.8912 121.7424)'), 'Shanghai', 'AVAILABLE', 1);
 
