@@ -6,11 +6,10 @@ import com.sharevax.core.model.Delivery;
 import com.sharevax.core.model.Delivery.DeliveryStatus;
 import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Supply;
-import com.sharevax.core.model.RoutePlan;
-
+import com.sharevax.core.model.route.RoutePlan;
+import com.sharevax.core.repository.SupplyRepository;
 import java.math.BigInteger;
 
-import java.util.*;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.locationtech.jts.geom.LineString;
@@ -19,6 +18,10 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class SimulationService {
@@ -28,12 +31,12 @@ public class SimulationService {
     private final SimulationFacade simulationFacade;
 
     // Coefficient of distance between two harbors
-    private static final double DISTANCE_FACTOR = 1;
+    private static double DISTANCE_FACTOR = 1;
 
     // The coefficient of urgency in calculating the urgency score
-    private static final double URGENCY_FACTOR = 1;
+    private static double URGENCY_FACTOR = 1;
 
-    private static final double GIVEN_URGENCY_FACTOR = 1;
+    private static double GIVEN_URGENCY_FACTOR = 1;
 
     // How much we take into account the Vaccination Rate of the country when calculating urgency
     private static final double VACCINATION_RATE_FACTOR = 1;
@@ -119,7 +122,7 @@ public class SimulationService {
         for (var demand : matchedBestPairs.keySet()) {
             var supply = matchedBestPairs.get(demand);
             if (supply != null) {
-                boolean isSameCountry = Objects.equals(supply.getCountry().getId(), demand.getCountry().getId());
+                boolean isSameCountry = supply.getCountry().getId() == demand.getCountry().getId();
                 if (!isSameCountry) {
                     System.out.println("Matched " + demand + " with " + supply);
                     simulationFacade.createSuggestion(supply, demand);
@@ -183,13 +186,13 @@ public class SimulationService {
     private HashMap<Demand, Double> getEstimatedUrgencyScores(HashMap<Demand, Integer> givenDemandUrgencies,
                                                               HashMap<Demand, Double> demandToVaccinationRates,
                                         HashMap<Demand, Double> demandToDailyVaccineConsumptionToStock) {
-        /*
-          Calculate the urgency score for each demand, based on the following factors:
-          1. Given urgency scores
-          2. Demand to vaccination rates
-          3. Demand to daily vaccine consumption to stock
-          Normalize these values and calculate the score,
-          Based on the defined static coefficients
+        /**
+         * Calculate the urgency score for each demand, based on the following factors:
+         * 1. Given urgency scores
+         * 2. Demand to vaccination rates
+         * 3. Demand to daily vaccine consumption to stock
+         * Normalize these values and calculate the score,
+         * Based on the defined static coefficients
          */
         HashMap<Demand, Double> demandToUrgencyScores = new HashMap<>();
         // Normalize each score factor
@@ -221,9 +224,9 @@ public class SimulationService {
 
     private HashMap<Demand, ImmutablePair<Double, Supply>> getDistanceScoresForPairs(List<Supply> supplies,
                                                                                      List<Demand> demands) {
-        /*
-          Calculate the distance score for each supply-demand pair which is inverse of the shortest distance
-          Return the demand -> (distance score, closestSupply) pair
+        /**
+         * Calculate the distance score for each supply-demand pair which is inverse of the shortest distance
+         * Return the demand -> (distance score, closestSupply) pair
          */
         HashMap<Demand, ImmutablePair<Double, Supply>> distanceScores = new HashMap<>();
         for (Demand demand : demands) {
@@ -246,9 +249,11 @@ public class SimulationService {
 
         // Normalize the distance scores to be between 0 and 1, 1 being the best and closest pair
         double maxDistanceScore = distanceScores.values().stream().mapToDouble(ImmutablePair::getLeft).max().getAsDouble();
-        distanceScores.replaceAll(
-                (d, v) -> new ImmutablePair<>(distanceScores.get(d).getLeft() / maxDistanceScore,
-                        distanceScores.get(d).getRight()));
+        for (Demand demand : distanceScores.keySet()) {
+            distanceScores.put(demand,
+                    new ImmutablePair<>(distanceScores.get(demand).getLeft() / maxDistanceScore,
+                            distanceScores.get(demand).getRight()));
+        }
 
         return distanceScores;
     }
@@ -358,6 +363,9 @@ public class SimulationService {
         long millisecondDiff = todayMillisecond - estimatedArrivalMillisecond;
         int dayDiff = (int) TimeUnit.MILLISECONDS.toDays(millisecondDiff);
 
-        return dayDiff > 1;
+        if (dayDiff > 1) {
+            return true;
+        }
+        return false;
     }
 }

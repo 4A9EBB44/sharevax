@@ -1,9 +1,11 @@
 package com.sharevax.core.service;
 
 import com.sharevax.core.model.Country;
+import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.VaccineType;
 import com.sharevax.core.model.dto.CreateSupplyDto;
+import com.sharevax.core.repository.CountryRepository;
 import com.sharevax.core.repository.SupplyRepository;
 import org.springframework.stereotype.Service;
 

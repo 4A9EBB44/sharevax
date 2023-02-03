@@ -1,6 +1,10 @@
 package com.sharevax.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.math.BigInteger;
 import lombok.*;
 import org.locationtech.jts.geom.LineString;
 

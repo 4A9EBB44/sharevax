@@ -7,12 +7,10 @@ import com.sharevax.core.model.Suggestion.ApprovalStatus;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.dto.SuggestionResponseDto;
 import com.sharevax.core.repository.SuggestionRepository;
-
+import com.sharevax.core.repository.SupplyRepository;
 import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
-import java.util.Objects;
-
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,8 +18,8 @@ public class SuggestionService {
 
     private final SuggestionRepository suggestionRepository;
     private final DeliveryService deliveryService;
-    private final DemandService demandService;
-    private final SupplyService supplyService;
+    private DemandService demandService;
+    private SupplyService supplyService;
 
     public SuggestionService(SuggestionRepository suggestionRepository,
         DeliveryService deliveryService,
@@ -51,10 +49,10 @@ public class SuggestionService {
             return true;
         }
         if (response.getApprovalStatus().equals(ApprovalStatus.APPROVED)) {
-            boolean isDemander =
-                    Objects.equals(suggestion.getDemand().getCountry().getId(), response.getCountryId());
-            boolean isSupplier =
-                    Objects.equals(suggestion.getSupply().getCountry().getId(), response.getCountryId());
+            Boolean isDemander =
+                suggestion.getDemand().getCountry().getId() == response.getCountryId();
+            Boolean isSupplier =
+                suggestion.getSupply().getCountry().getId() == response.getCountryId();
             if (isSupplier) {
                 suggestion.setSupplierStatus(response.getApprovalStatus());
             } else if (isDemander) {

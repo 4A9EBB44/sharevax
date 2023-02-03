@@ -1,4 +1,4 @@
-package com.sharevax.core.model;
+package com.sharevax.core.model.route;
 
 import com.sharevax.core.model.Harbor;
 import lombok.Getter;
