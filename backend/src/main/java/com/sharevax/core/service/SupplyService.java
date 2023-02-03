@@ -1,7 +1,6 @@
 package com.sharevax.core.service;
 
 import com.sharevax.core.model.Country;
-import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.VaccineType;
 import com.sharevax.core.model.dto.CreateSupplyDto;
@@ -29,9 +28,20 @@ public class SupplyService {
         supply.setVaccineType(VaccineType.valueOf(createSupplyDto.getVaccineType()));
         supply.setQuantity(createSupplyDto.getQuantity());
         supply.setUnitPrice(createSupplyDto.getUnitPrice());
-        supply.setExpirationDate(createSupplyDto.getExpirationDate());
+
         supplyRepository.save(supply);
         return supply;
+    }
+
+    public Supply createSupply(Integer countryId, String vaccineType, BigInteger quantity, double unitPrice) {
+        Supply supply = Supply.builder()
+                .country(countryService.getCountryById(countryId))
+                .vaccineType(VaccineType.valueOf(vaccineType))
+                .quantity(quantity)
+                .unitPrice(unitPrice)
+                .build();
+
+        return supplyRepository.save(supply);
     }
 
     public List<Supply> getAllSupplies() {
@@ -55,15 +65,5 @@ public class SupplyService {
 
     public List<Supply> findUnmatchedSupplies() {
         return supplyRepository.findUnmatchedSupplies();
-    }
-
-    public void deleteAll() {
-        supplyRepository.deleteAll();
-    }
-
-    public void decreaseQuantity(Integer supplyId, BigInteger quantity) {
-        Supply supply = getSupplyById(supplyId);
-        supply.setQuantity(supply.getQuantity().subtract(quantity));
-        supplyRepository.save(supply);
     }
 }

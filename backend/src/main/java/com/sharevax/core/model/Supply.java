@@ -1,6 +1,5 @@
 package com.sharevax.core.model;
 
-import java.util.Date;
 import lombok.*;
 
 import javax.persistence.*;
@@ -29,9 +28,6 @@ public class Supply {
 
     @Column(name = "quantity", nullable = false)
     private BigInteger quantity;
-
-    @Column(name = "expiration_date", nullable = false)
-    private Date expirationDate;
 
     @Column(name = "unit_price")
     @Builder.Default

@@ -2,7 +2,11 @@ package com.sharevax.core.facade;
 
 import com.sharevax.core.model.*;
 import com.sharevax.core.model.route.RoutePlan;
+import com.sharevax.core.repository.DeliveryRepository;
 import com.sharevax.core.service.*;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
 
@@ -17,24 +21,18 @@ public class SimulationFacade {
     private final RouteService routeService;
     private final EventService eventService;
 
-    private final SuggestionService suggestionService;
-
     public SimulationFacade(SupplyService supplyService, DemandService demandService,
                             CountryService countryService, RouteService routeService,
-                            DeliveryService deliveryService, EventService eventService, SuggestionService suggestionService) {
+                            DeliveryService deliveryService, EventService eventService) {
 
         this.supplyService = supplyService;
         this.demandService = demandService;
         this.countryService = countryService;
         this.routeService = routeService;
         this.deliveryService = deliveryService;
-        this.suggestionService = suggestionService;
         this.eventService = eventService;
     }
 
-    public Suggestion createSuggestion(Supply supply, Demand demand) {
-        return suggestionService.createSuggestion(supply, demand);
-    }
     public List<Supply> getAllSupplies() {
         return supplyService.getAllSupplies();
     }
@@ -59,6 +57,11 @@ public class SimulationFacade {
         return routeService.findShortestDistanceBetweenDemandAndSupply(demand, supply);
     }
 
+    public Delivery createDelivery(Harbor startHarbor, Harbor destinationHarbor,
+                                   Supply supply, Demand demand, Date createdAt) {
+        return deliveryService.createDelivery(startHarbor, destinationHarbor, supply, demand, createdAt);
+    }
+
     public List<Demand> getUnmatchedDemands() {
         return demandService.findUnmatchedDemands();
     }
@@ -79,24 +82,6 @@ public class SimulationFacade {
     public List<Supply> getUnmatchedSupplies() {
         return supplyService.findUnmatchedSupplies();
     }
-
-    public void resetCountryData() {
-        countryService.resetCountryData();
-    }
-
-    public void deleteAllDeliveries() {
-        deliveryService.deleteAll();
-    }
-
-    public void deleteAllSupplies() {
-        supplyService.deleteAll();
-    }
-
-    public void deleteAllDemands() {
-        demandService.deleteAll();
-    }
-
-    public void deleteAllSuggestions(){ suggestionService.deleteAllSuggestions();}
 
     public void processEvents() {
         eventService.processEvents();

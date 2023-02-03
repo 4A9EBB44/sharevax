@@ -30,9 +30,4 @@ public class SimulationController {
         return ResponseEntity.ok(simulationService.getCurrentDate());
     }
 
-    @Operation(summary = "Resets simulation to initial data")
-    @PatchMapping("/reset")
-    public void resetSimulation() {
-        simulationService.resetSimulation();
-    }
 }
