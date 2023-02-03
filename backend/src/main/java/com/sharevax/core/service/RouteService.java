@@ -5,7 +5,7 @@ import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Harbor;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.event.Event;
-import com.sharevax.core.model.route.RoutePlan;
+import com.sharevax.core.model.RoutePlan;
 import eu.europa.ec.eurostat.jgiscotools.feature.Feature;
 import eu.europa.ec.eurostat.jgiscotools.util.GeoDistanceUtil;
 import eu.europa.ec.eurostat.searoute.SeaRouting;
@@ -28,9 +28,9 @@ public class RouteService {
     }
 
     public double findShortestDistanceBetweenDemandAndSupply(Demand demand, Supply supply) {
-        /**
-         * Find the shortest distance between a demand and a supply
-         * Wrapper around getDistanceBetweenCountries for ease of use
+        /*
+          Find the shortest distance between a demand and a supply
+          Wrapper around getDistanceBetweenCountries for ease of use
          */
         return getDistanceBetweenCountries(demand.getCountry(), supply.getCountry());
     }
@@ -187,7 +187,7 @@ public class RouteService {
 
         // insert points
         Coordinate[] coordinates = route.getGeometry().getCoordinates();
-        List<Coordinate> coordinatesList = new ArrayList<Coordinate>();
+        List<Coordinate> coordinatesList = new ArrayList<>();
         for (int i = 0; i < coordinates.length - 1; i++) {
             Coordinate start = coordinates[i];
             Coordinate next = coordinates[i + 1];

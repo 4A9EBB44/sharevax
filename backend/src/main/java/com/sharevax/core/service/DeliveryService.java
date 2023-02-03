@@ -1,23 +1,15 @@
 package com.sharevax.core.service;
 
 import com.sharevax.core.model.Delivery;
-import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Harbor;
 import com.sharevax.core.model.Suggestion;
-import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.dto.DeliveryDto;
 import com.sharevax.core.repository.DeliveryRepository;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
+
+import java.util.*;
 
 import org.locationtech.jts.geom.LineString;
 import org.springframework.stereotype.Service;
-
-import java.util.Date;
-import java.util.List;
 
 @Service
 public class DeliveryService {
@@ -40,7 +32,7 @@ public class DeliveryService {
 
         LineString futureRoute = routeService.getLineString(startHarbor, destinationHarbor);
         LineString routeHistory = routeService.getLineString(
-            new ArrayList<>(Arrays.asList(startHarbor.getCoordinate().getCoordinate())));
+            new ArrayList<>(List.of(startHarbor.getCoordinate().getCoordinate())));
 
         // calculate the estimatedArrivalDate
         int duration = routeService.getDistanceInDays(startHarbor, destinationHarbor);
@@ -104,14 +96,14 @@ public class DeliveryService {
     }
 
     private boolean isRelated(Integer countryId, Delivery delivery) {
-        return delivery.getSupply().getId() == countryId ||
-            delivery.getDemand().getId() == countryId;
+        return Objects.equals(delivery.getSupply().getId(), countryId) ||
+                Objects.equals(delivery.getDemand().getId(), countryId);
     }
 
     private Date getEstimatedArrivalDate(int deliveryDays, Date today) {
         Calendar calendar = new GregorianCalendar();
         calendar.setTime(today);
-        calendar.add(calendar.DATE, deliveryDays + 1);
+        calendar.add(Calendar.DATE, deliveryDays + 1);
         return calendar.getTime();
     }
 

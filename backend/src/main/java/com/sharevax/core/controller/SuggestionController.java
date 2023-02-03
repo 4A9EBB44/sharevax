@@ -1,8 +1,6 @@
 package com.sharevax.core.controller;
 
 import com.sharevax.core.model.Suggestion;
-import com.sharevax.core.model.Supply;
-import com.sharevax.core.model.dto.CreateSupplyDto;
 import com.sharevax.core.model.dto.SuggestionResponseDto;
 import com.sharevax.core.service.SuggestionService;
 import io.swagger.v3.oas.annotations.Operation;

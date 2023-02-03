@@ -9,10 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
@@ -49,7 +46,7 @@ public class EventService {
             delayingEvent = new BlockedChannel(event.getSubject(), event.getRemainingDaysToStart());
         }
 
-        return eventRepository.save(delayingEvent);
+        return eventRepository.save(Objects.requireNonNull(delayingEvent));
     }
 
     public Set<String> findBlockedPassages(List<Event> activeEvents) {

@@ -1,6 +1,5 @@
 package com.sharevax.core.repository;
 
-import com.sharevax.core.model.Delivery;
 import com.sharevax.core.model.Suggestion;
 import java.util.List;
 import java.util.Optional;
