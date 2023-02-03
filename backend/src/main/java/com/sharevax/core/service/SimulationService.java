@@ -8,6 +8,8 @@ import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.route.RoutePlan;
 import com.sharevax.core.repository.SupplyRepository;
+import java.math.BigInteger;
+
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.locationtech.jts.geom.LineString;
@@ -52,11 +54,28 @@ public class SimulationService {
         simulationFacade.processEvents();
         updateShipLocations();
 
-        updateVaccineStocks();
-        updateVaccinationRates();
+        updateVaccineStocksAndVaccinationRates();
 
         matchSupplyAndDemand();
+    }
 
+    public void resetSimulation() {
+        DAY_COUNTER = 0;
+        resetDatabaseState();
+    }
+
+    private void resetDatabaseState() {
+        // delete all deliveries
+        simulationFacade.deleteAllDeliveries();
+        simulationFacade.deleteAllSuggestions();
+        // delete all supplies
+        simulationFacade.deleteAllSupplies();
+
+        // delete all demands
+        simulationFacade.deleteAllDemands();
+
+        // reset country data
+        simulationFacade.resetCountryData();
     }
 
     public void matchSupplyAndDemand() {
@@ -103,16 +122,11 @@ public class SimulationService {
         for (var demand : matchedBestPairs.keySet()) {
             var supply = matchedBestPairs.get(demand);
             if (supply != null) {
-                System.out.println("Matched " + demand + " with " + supply);
-                // Create the Delivery
-                Delivery delivery = simulationFacade.createDelivery(
-                        supply.getCountry().getHarbors().get(0), // TODO use closest harbor
-                        demand.getCountry().getHarbors().get(0), // TODO use closest harbor
-                        supply,
-                        demand,
-                        getCurrentDate()
-                );
-                System.out.println("Created delivery: " + delivery);
+                boolean isSameCountry = supply.getCountry().getId() == demand.getCountry().getId();
+                if (!isSameCountry) {
+                    System.out.println("Matched " + demand + " with " + supply);
+                    simulationFacade.createSuggestion(supply, demand);
+                }
             }
         }
     }
@@ -132,6 +146,16 @@ public class SimulationService {
             demandToClosestSupply.put(demand, distanceScores.get(demand).getRight());
         }
 
+        var maxCumulativeScore = demandToCumulativeScore.values().stream().max(Double::compareTo).get();
+        var minCumulativeScore = demandToCumulativeScore.values().stream().min(Double::compareTo).get();
+
+        // Normalize the cumulative scores based on max and min
+        for (Demand demand : demands) {
+            var cumulativeScore = demandToCumulativeScore.get(demand);
+            var normalizedCumulativeScore = (cumulativeScore - minCumulativeScore) / (maxCumulativeScore - minCumulativeScore);
+            demandToCumulativeScore.put(demand, normalizedCumulativeScore);
+        }
+
         // Sort descending based on demandToCumulativeScore
         demands.sort((d1, d2) -> demandToCumulativeScore.get(d2).compareTo(demandToCumulativeScore.get(d1)));
 
@@ -147,10 +171,8 @@ public class SimulationService {
             // Match the demand to the supply
             demandToSupply.put(demand, supply);
 
-            // Remove the demand from the list of demands
             demands.remove(demand);
 
-            // Remove the supply from the list of supplies
             demandToClosestSupply.remove(demand);
         }
 
@@ -158,7 +180,7 @@ public class SimulationService {
     }
 
     private double calculateCumulativeScore(double urgencyScore, double distanceScore) {
-        return urgencyScore * GIVEN_URGENCY_FACTOR + distanceScore * DISTANCE_FACTOR;
+        return urgencyScore * URGENCY_FACTOR + distanceScore * DISTANCE_FACTOR;
     }
 
     private HashMap<Demand, Double> getEstimatedUrgencyScores(HashMap<Demand, Integer> givenDemandUrgencies,
@@ -241,28 +263,32 @@ public class SimulationService {
         return 1 / shortestDistanceBetweenHarbors;
     }
 
-    private void updateVaccineStocks() {
+    private void updateVaccineStocksAndVaccinationRates() {
         // update vaccine stock based on vaccine production and consumption
         var countries = simulationFacade.getAllCountries();
         for (Country country : countries) {
             var production = country.getDailyVaccineProduction();
-            var consumption = country.getDailyVaccineConsumption();
+
+            var dailyConsumption = country.getDailyVaccineConsumption();
             var stock = country.getVaccineStock();
+            var consumption = dailyConsumption.compareTo(stock) < 0 ? dailyConsumption : stock;
 
-            var updatedStock = stock.add(production).subtract(consumption);
-            country.setVaccineStock(updatedStock);
-        }
-    }
+            BigInteger netVaccine = stock.add(production).subtract(consumption);
+            if (netVaccine.compareTo(BigInteger.ZERO) < 0) {
+                country.setVaccineStock(BigInteger.ZERO);
+            } else {
+                country.setVaccineStock(netVaccine);
+            }
 
-    private void updateVaccinationRates() {
-        var countries = simulationFacade.getAllCountries();
-        for (Country country : countries) {
-            var consumption = country.getDailyVaccineConsumption();
-            var population = country.getPopulation();
+            var vaccinationRate = country.getVaccinationRate();
+            double updatedVaccinationRate = vaccinationRate
+                    + consumption.doubleValue() / country.getPopulation().doubleValue();
 
-            // consume daily amount of vaccines and update vaccination rate
-            var updatedVaccinationRate = country.getVaccinationRate() + (consumption.doubleValue() / population.doubleValue());
-            country.setVaccinationRate(updatedVaccinationRate);
+            if (updatedVaccinationRate > 1) {
+                country.setVaccinationRate(1);
+            } else {
+                country.setVaccinationRate(updatedVaccinationRate);
+            }
         }
     }
 
@@ -281,9 +307,8 @@ public class SimulationService {
         // convert LocalDateTime to Date
         ZoneId zoneId = ZoneId.systemDefault();
         ZonedDateTime zonedDateTime = simulatedTodayDate.atZone(zoneId);
-        Date date = Date.from(zonedDateTime.toInstant());
 
-        return date;
+        return Date.from(zonedDateTime.toInstant());
     }
 
     public int getDayCounter() {

@@ -3,9 +3,11 @@ package com.sharevax.core.service;
 import com.sharevax.core.model.Delivery;
 import com.sharevax.core.model.Demand;
 import com.sharevax.core.model.Harbor;
+import com.sharevax.core.model.Suggestion;
 import com.sharevax.core.model.Supply;
 import com.sharevax.core.model.dto.DeliveryDto;
 import com.sharevax.core.repository.DeliveryRepository;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -33,7 +35,7 @@ public class DeliveryService {
     }
 
     public Delivery createDelivery(Harbor startHarbor, Harbor destinationHarbor,
-                                   Supply supply, Demand demand, Date createdAt) {
+                                    Date createdAt, Suggestion suggestion) {
 
 
         LineString futureRoute = routeService.getLineString(startHarbor, destinationHarbor);
@@ -50,14 +52,15 @@ public class DeliveryService {
                 .startHarbor(startHarbor)
                 .destinationHarbor(destinationHarbor)
                 .estimatedArrivalDate(estimatedArrivalDate)
-                .supply(supply)
+                .supply(suggestion.getSupply())
                 .createdAt(createdAt)
                 .deliveryStatus(Delivery.DeliveryStatus.IN_TIME)
-                .demand(demand)
+                .demand(suggestion.getDemand())
                 .routeHistory(routeHistory)
                 .futureRoute(futureRoute)
                 .remainingDaysToNextHarbor(remainingDaysToNextHarbor)
                 .updatedAt(createdAt)
+                .quantity(suggestion.getQuantity())
                 .build();
 
         return deliveryRepository.save(delivery);
@@ -110,6 +113,10 @@ public class DeliveryService {
         calendar.setTime(today);
         calendar.add(calendar.DATE, deliveryDays + 1);
         return calendar.getTime();
+    }
+
+    public void deleteAll() {
+        deliveryRepository.deleteAll();
     }
 
 }
