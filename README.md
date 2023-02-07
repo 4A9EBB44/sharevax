@@ -1,6 +1,8 @@
 <h3 align="center"><img src="https://user-images.githubusercontent.com/33310255/217078166-67f6e7b7-be4b-4828-9e35-b3a1e115f5e3.png" width="400px"></h3>
 
 ---
+# Sponsor
+[<img src="https://prod.ucwe.capgemini.com/de-de/wp-content/themes/capgemini2020/assets/images/logo.svg"/>](https://www.capgemini.com/de-de/)
 
 # What's Sharevax?
 Sharevax is a web application that empowers the global health by ensuring the efficient distribution of vaccines with its smart algorithms.
@@ -36,6 +38,3 @@ Pandemic hasn’t gone yet, and we noticed one piece of CDC news about vaccine s
 # Tech Stack
 - Frontend: [React](https://reactjs.org/), [Leaflet](https://leafletjs.com/), [Tailwind CSS](https://tailwindcss.com/).
 - Backend: [Spring](https://spring.io/), [PostgreSQL](https://www.postgresql.org/).
-
-# Sponsor
-[<img src="https://prod.ucwe.capgemini.com/de-de/wp-content/themes/capgemini2020/assets/images/logo.svg"/>](https://www.capgemini.com/de-de/)
